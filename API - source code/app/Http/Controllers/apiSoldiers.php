@@ -4,6 +4,7 @@
 
   use App\Models\Soldaten;
   use App\Http\Controllers\Controller;
+  use App\Http\Fractal\Soldier;
 
   use League\Fractal\Manager;
   use League\Fractal\Resource\Collection;
@@ -13,12 +14,14 @@
   class apiSoldiers extends Controller {
 
     private $fractal;
+    private $layout;
 
     /**
      * Class constructor
      */
     public function __construct() {
       $this->fractal = new Manager();
+      $this->layout  = new Soldier()
     }
 
     /**
@@ -33,19 +36,7 @@
       $soldaten           = Soldaten::with('begraafplaats', 'regiment');
       $variable['result'] = $soldaten->get();
 
-      $resource = new Collection($variable['result'], function($Data) {
-        return [
-          [
-            'id'                => (int)    $Data['id'],
-            'Voornaam'          => (string) $Data['Voornaam'],
-            'Achternaam'        => (string) $Data['Achternaam'],
-            'Burgerlijke stand' => (string) $Data['Burgerlijke_stand'],
-            'Dienst nr'         => (string) $Data['Stam_nr'],
-            'Regiment ID'       => (int)    $Data['regiment_id'],
-            'Regiment'          => (string) $Data['regiment']['Regiment'],
-          ],
-        ];
-      });
+      $resource = new Collection($this->layout->layout($variable['result']);
 
       if($parse === 'json') {
         return response($this->fractal->createData($resource)->toJson(), 200)
